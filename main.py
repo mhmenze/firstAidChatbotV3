@@ -6,12 +6,16 @@ import speech_recognition as sr
 from sklearn.model_selection import train_test_split
 from transformers import BertTokenizer, BertForSequenceClassification
 
+#Setting up the web app page
 st.set_page_config(page_title="Medico Chatbot", page_icon=":robot_face:")
 st.title("Welcome to the First Aid responses App")
 st.markdown("I can help you with your First Aid Questions.")
 
+# Define Confidence Threshold
+confidence_threshold = 0.5
+
 # Define a function to predict the intent of user input
-def predict_intent(model, tokenizer, intent_labels, text, confidence_threshold):
+def predict_intent(model, tokenizer, intent_labels, text):
     # Tokenize the input text and add special tokens
     inputs = tokenizer.batch_encode_plus([text], padding=True, truncation=True, return_tensors='pt')
 
@@ -21,21 +25,23 @@ def predict_intent(model, tokenizer, intent_labels, text, confidence_threshold):
     predicted_class_idx = logits.argmax(dim=1).item()
 
     # Get the predicted intent tag and the confidence score
-    predicted_tag = intent_labels[predicted_class_idx]
+    predicted_tag = str(intent_labels[predicted_class_idx])
     confidence_score = torch.softmax(logits, dim=1)[0][predicted_class_idx].item()
 
     if confidence_score < confidence_threshold:
         predicted_tag = "unknown"
-    st.write("Predict intent function - confidence score:", confidence_score)
-    st.write("Predict intent function - tag:", predicted_tag)
-    return predicted_tag, confidence_score
+    
+    return predicted_tag.lower(), confidence_score
+
 
 # Define a function to get a random response based on intent tag
-def get_response(intents, intent):
-    intent_data = next((item for item in intents if item["tag"] == intent), None)
+def get_response(intents, intent_tag):
+    #intent_data = next((item for item in intents if item["tag"] == intent), None)
+    #intent_tag = intent["tag"].lower()
+    intent_data = next((item for item in intents if item["tag"].lower() == intent_tag), None)
+ 
     if intent_data:
         responses = intent_data['responses']
-        st.write("get response function - response:", responses)
         return random.choice(responses)
     else:
         return "I'm sorry, I didn't understand what you meant."
@@ -103,7 +109,7 @@ def load_model():
 
     # Train the model
     model.train()
-    for epoch in range(5):
+    for epoch in range(2):
         total_loss = 0
         for i in range(0, len(training_data), batch_size):
             inputs = {key: val[i:i+batch_size] for key, val in train_encodings.items()}
@@ -123,29 +129,32 @@ def load_model():
     # Set the model to evaluation mode
     model.eval()
 
-    # Define Confidence Threshold
-    confidence_threshold = 0.5
-
-    return model, tokenizer, intents, confidence_threshold
-
+    return model, tokenizer, intent_labels, intents
 
 # Define the Streamlit app
 def app():
     # Load the model, tokenizer, and intent labels
-    model, tokenizer, intents,confidence_threshold = load_model()
+    model, tokenizer, intent_labels, dataset = load_model()
 
     #Take user input via text
-    text = st.text_input("Enter your question")
+    user_input = st.text_input("Enter your question")
 
     # Create a button to start listening for speech
     if st.button("Click here to start speaking 🎤"):
         st.write("Listening...")
-        text = transcribe_speech()
+        user_input = transcribe_speech()
     
-    st.write("You said:", text)
-    intent, confidence_score = predict_intent(model, tokenizer, intents, text, confidence_threshold)
-    response = get_response(intents, intent)
-    st.write("Bot:", response)
+    st.write("User:", user_input)
+    intent_tag, confidence_score = predict_intent(model, tokenizer, intent_labels, user_input)
+    #st.write("Predicted tag:", intent_tag)
+    #st.write("Dataset", intents)
+    #st.write("Intent Labels", intent_labels)
+    response = get_response(dataset, intent_tag)
+    #st.write(confidence_score)
+    if user_input=="":
+        st.write("Bot: Hello there! What can I do for you today?")
+    else:
+        st.write("Bot:", response)
 
 if __name__ == '__main__':
     app()
