@@ -30,7 +30,8 @@ def predict_intent(model, tokenizer, intent_labels, text):
 
     if confidence_score < confidence_threshold:
         predicted_tag = "unknown"
-    
+    #st.write("Predicted Tag",predicted_tag)
+    #st.write("Predicted Tag.lower",predicted_tag.lower())
     return predicted_tag.lower(), confidence_score
 
 
@@ -38,8 +39,12 @@ def predict_intent(model, tokenizer, intent_labels, text):
 def get_response(intents, intent_tag):
     #intent_data = next((item for item in intents if item["tag"] == intent), None)
     #intent_tag = intent["tag"].lower()
+    #st.write(type(intent_tag))
     intent_data = next((item for item in intents if item["tag"].lower() == intent_tag), None)
- 
+    #intent_data = next((item for item in intents if (print(item["tag"]), item["tag"]) == (None, intent_tag)), None)
+    #st.write("Intent Tag", intent_tag)
+    #st.write(intent_data)
+    #st.write("item['tag']",intents["tag"])
     if intent_data:
         responses = intent_data['responses']
         return random.choice(responses)
@@ -72,10 +77,10 @@ def transcribe_speech():
 def load_model():
     # Load intents from JSON file
     with open('intents.json', 'r') as f:
-        intents = json.load(f)['intents']
+        dataset = json.load(f)['intents']
 
     # Split dataset into training and validation sets
-    train_data, val_data = train_test_split(intents, test_size=0.2, random_state=42)
+    train_data, val_data = train_test_split(dataset, test_size=0.2, random_state=42)
 
     # Load BERT tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -91,6 +96,7 @@ def load_model():
 
     # Tokenize and encode training data
     batch_size = 16
+    epoch_size = 10
     train_encodings = tokenizer([data[0] for data in training_data], truncation=True, padding=True, return_tensors='pt')
 
     # Extract all unique intent tags from the dataset
@@ -109,7 +115,7 @@ def load_model():
 
     # Train the model
     model.train()
-    for epoch in range(2):
+    for epoch in range(epoch_size):
         total_loss = 0
         for i in range(0, len(training_data), batch_size):
             inputs = {key: val[i:i+batch_size] for key, val in train_encodings.items()}
@@ -129,7 +135,7 @@ def load_model():
     # Set the model to evaluation mode
     model.eval()
 
-    return model, tokenizer, intent_labels, intents
+    return model, tokenizer, intent_labels, dataset
 
 # Define the Streamlit app
 def app():
@@ -147,7 +153,7 @@ def app():
     st.write("User:", user_input)
     intent_tag, confidence_score = predict_intent(model, tokenizer, intent_labels, user_input)
     #st.write("Predicted tag:", intent_tag)
-    #st.write("Dataset", intents)
+    #st.write("Dataset", dataset)
     #st.write("Intent Labels", intent_labels)
     response = get_response(dataset, intent_tag)
     #st.write(confidence_score)

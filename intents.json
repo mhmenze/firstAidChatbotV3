@@ -71,8 +71,8 @@
          "context_set": ""
         },
 
-        {"tag": "Abdonominal Pain",
-         "patterns": ["How do you treat Abdonominal Pain?", "what to do if i get a Abdonominal Pain?", "Which medicine to take if I get a Abdonominal Pain?", "How to cure Abdonominal Pain?"],
+        {"tag": "Stomach Pain",
+         "patterns": ["How do you treat Abdominal Pain?", "what to do if i get a Abdominal Pain?", "Which medicine to take if I get a Stomach Pain?", "How to cure Abdominal Pain?"],
          "responses": ["1)Provide clear fluids to sip, such as water, broth, or fruit juice diluted with water. 2)Serve bland foods, such as saltine crackers, plain bread, dry toast, rice, gelatin, or applesauce. 3)Avoid spicy or greasy foods and caffeinated or carbonated drinks until 48 hours after all symptoms have gone away. "],
          "context_set": ""
         },
@@ -91,7 +91,7 @@
 
         {"tag": "Choking",
          "patterns": ["How do you treat Choking?", "what to do if i get a Choke?", "Which medicine to take if I get Choked?", "How to cure Choking?"],
-         "responses": ["1)Encourage them to keep coughing to try to clear the blockage. 2)Ask them to try to spit out the object if it's in their mouth. 3)If coughing doesn't work, start back blows and Abdonominal thrusts"],
+         "responses": ["1)Encourage them to keep coughing to try to clear the blockage. 2)Ask them to try to spit out the object if it's in their mouth. 3)If coughing doesn't work, start back blows and Abdominal thrusts"],
          "context_set": ""
         },
 
